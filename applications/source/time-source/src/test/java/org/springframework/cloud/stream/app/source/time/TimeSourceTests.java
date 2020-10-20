@@ -80,6 +80,7 @@ public class TimeSourceTests {
 	}
 
 	@Test
+	// @Disabled("TODO://Pending fix in spring-cloud-stream or spring-cloud-function")
 	public void testSourceComposedWithOtherStuff() throws IOException {
 		ObjectMapper objectMapper = new ObjectMapper();
 		try (ConfigurableApplicationContext context = new SpringApplicationBuilder(

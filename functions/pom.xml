@@ -6,7 +6,7 @@
 	<artifactId>java-functions-parent</artifactId>
 	<version>${revision}</version>
 	<name>java-functions-parent</name>
-	<description>Pivotal Java Functions Parent</description>
+	<description>Java Functions Parent</description>
 	<packaging>pom</packaging>
 
 	<parent>
@@ -54,6 +54,7 @@
 		<module>consumer/twitter-consumer</module>
 		<module>consumer/wavefront-consumer</module>
 		<module>consumer/rsocket-consumer</module>
+		<module>consumer/zeromq-consumer</module>
 
 		<module>function/aggregator-function</module>
 		<module>function/filter-function</module>

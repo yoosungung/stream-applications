@@ -16,8 +16,6 @@
 
 package org.springframework.cloud.fn.consumer.log;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import java.util.function.Consumer;
 
 import org.awaitility.Awaitility;
@@ -36,6 +34,8 @@ import org.springframework.integration.support.MessageBuilder;
 import org.springframework.integration.test.util.TestUtils;
 import org.springframework.messaging.Message;
 import org.springframework.util.MimeType;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Artem Bilan

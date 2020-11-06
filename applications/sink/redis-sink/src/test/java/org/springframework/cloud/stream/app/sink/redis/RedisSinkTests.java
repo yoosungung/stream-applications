@@ -47,11 +47,12 @@ public class RedisSinkTests {
 		try (ConfigurableApplicationContext context = new SpringApplicationBuilder(
 				TestChannelBinderConfiguration
 						.getCompleteConfiguration(RedisSinkTestApplication.class))
-				.web(WebApplicationType.NONE)
-				.run("--spring.cloud.function.definition=redisConsumer",
-						"--redis.consumer.key=foo")) {
+								.web(WebApplicationType.NONE)
+								.run("--spring.cloud.bootstrap.enabled=true",
+										"--spring.cloud.function.definition=redisConsumer",
+										"--redis.consumer.key=foo")) {
 
-			//Setup
+			// Setup
 			String key = "foo";
 
 			final StringRedisTemplate redisTemplate = context.getBean(StringRedisTemplate.class);
@@ -63,7 +64,7 @@ public class RedisSinkTests {
 			list.add("Moe");
 			list.add("Jack");
 
-			//Execute
+			// Execute
 			Message<List<String>> message = new GenericMessage<>(list);
 
 			InputDestination source = context.getBean(InputDestination.class);

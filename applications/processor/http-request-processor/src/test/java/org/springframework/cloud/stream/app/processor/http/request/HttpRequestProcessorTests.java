@@ -107,7 +107,7 @@ public class HttpRequestProcessorTests {
 					assertThat(responseEntityAsMap.get("statusCode")).isEqualTo("OK");
 					assertThat(responseEntityAsMap.get("body")).isEqualTo(message.getHeaders().get("body"));
 					assertThat(reply.getHeaders().get(MessageHeaders.CONTENT_TYPE))
-							.isEqualTo(MediaType.APPLICATION_JSON);
+							.isEqualTo(MediaType.APPLICATION_JSON_VALUE);
 				});
 	}
 
@@ -130,7 +130,7 @@ public class HttpRequestProcessorTests {
 					Message<byte[]> reply = outputDestination.receive(10000);
 					assertThat(new String(reply.getPayload())).isEqualTo(message.getPayload());
 					assertThat(reply.getHeaders().get(MessageHeaders.CONTENT_TYPE))
-							.isEqualTo(MediaType.APPLICATION_OCTET_STREAM);
+							.isEqualTo(MediaType.APPLICATION_OCTET_STREAM_VALUE);
 				});
 	}
 

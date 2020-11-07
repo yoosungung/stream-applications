@@ -44,70 +44,66 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class ZeroMqSinkTests {
 
-    private static final ZContext CONTEXT = new ZContext();
+	private static final ZContext CONTEXT = new ZContext();
 
-    @AfterAll
-    static void teardown() {
-        CONTEXT.close();
-    }
+	@AfterAll
+	static void teardown() {
+		CONTEXT.close();
+	}
 
-    @Test
-    public void testSinkFromFunction() {
+	@Test
+	public void testSinkFromFunction() {
 
-        ZMQ.Socket socket = CONTEXT.createSocket(SocketType.SUB);
-        socket.setReceiveTimeOut(10_000);
-        int port = socket.bindToRandomPort("tcp://*");
-        socket.subscribe("test-topic");
+		ZMQ.Socket socket = CONTEXT.createSocket(SocketType.SUB);
+		socket.setReceiveTimeOut(10_000);
+		int port = socket.bindToRandomPort("tcp://*");
+		socket.subscribe("test-topic");
 
-        ZMQ.Poller poller = CONTEXT.createPoller(1);
-        poller.register(socket, ZMQ.Poller.POLLIN);
+		ZMQ.Poller poller = CONTEXT.createPoller(1);
+		poller.register(socket, ZMQ.Poller.POLLIN);
 
-        try (ConfigurableApplicationContext context =
-                    new SpringApplicationBuilder(
-                            TestChannelBinderConfiguration.getCompleteConfiguration(ZeroMqSourceTestApplication.class)
-                    ).run(
-                            "--logging.level.org.springframework.integration=DEBUG",
-                            "--spring.cloud.function.definition=zeromqConsumer",
-                            "--zeromq.consumer.topic='test-topic'",
-                            "--zeromq.consumer.connectUrl=tcp://localhost:" + port
-                    )
-        ) {
+		try (ConfigurableApplicationContext context = new SpringApplicationBuilder(
+				TestChannelBinderConfiguration.getCompleteConfiguration(ZeroMqSourceTestApplication.class)).run(
+						"--logging.level.org.springframework.integration=DEBUG",
+						"--spring.cloud.function.definition=zeromqConsumer",
+						"--zeromq.consumer.topic='test-topic'",
+						"--zeromq.consumer.connectUrl=tcp://localhost:" + port)) {
 
-            InputDestination inputDestination = context.getBean(InputDestination.class);
+			InputDestination inputDestination = context.getBean(InputDestination.class);
 
-            Message<?> testMessage =
-                    MessageBuilder.withPayload("test")
-                            .setHeader("topic", "test-topic")
-                            .setHeader("contentType", MimeTypeUtils.APPLICATION_OCTET_STREAM)
-                            .build();
-            inputDestination.send(testMessage);
+			Message<?> testMessage = MessageBuilder.withPayload("test")
+					.setHeader("topic", "test-topic")
+					.setHeader("contentType", MimeTypeUtils.APPLICATION_OCTET_STREAM)
+					.build();
+			inputDestination.send(testMessage);
 
-            ZMsg received = null;
-            while (received == null) {
+			ZMsg received = null;
+			while (received == null) {
 
-                poller.poll(10000);
-                if (poller.pollin(0)) {
+				poller.poll(10000);
+				if (poller.pollin(0)) {
 
-                    received = ZMsg.recvMsg(socket);
-                    assertThat(received).isNotNull();
-                    assertThat(received.unwrap().getString(ZMQ.CHARSET)).isEqualTo("test-topic");
-                    assertThat(received.getLast().getString(ZMQ.CHARSET)).isEqualTo("test");
+					received = ZMsg.recvMsg(socket);
+					assertThat(received).isNotNull();
+					assertThat(received.unwrap().getString(ZMQ.CHARSET)).isEqualTo("test-topic");
+					assertThat(received.getLast().getString(ZMQ.CHARSET)).isEqualTo("test");
 
-                }
+				}
 
-            }
+			}
 
-        }
-        finally {
-            poller.unregister(socket);
-            poller.close();
-            socket.close();
-        }
+		}
+		finally {
+			poller.unregister(socket);
+			poller.close();
+			socket.close();
+		}
 
-    }
+	}
 
-    @SpringBootApplication
-    @Import(ZeroMqConsumerConfiguration.class)
-    public static class ZeroMqSourceTestApplication { }
+	@SpringBootApplication
+	@Import(ZeroMqConsumerConfiguration.class)
+	public static class ZeroMqSourceTestApplication {
+	}
 
 }

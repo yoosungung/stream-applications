@@ -37,42 +37,44 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
  */
 public class ZeroMqSinkInvalidConfigTests {
 
-    @Test
-    public void testEmptyConnectionUrl() {
-        assertThatExceptionOfType(BeanCreationException.class)
-                .isThrownBy(() -> {
+	@Test
+	public void testEmptyConnectionUrl() {
+		assertThatExceptionOfType(BeanCreationException.class)
+				.isThrownBy(() -> {
 
-                    AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
-                    TestPropertyValues.of("zeromq.consumer.connectUrl:").applyTo(context);
-                    context.register(Config.class);
-                    context.refresh();
+					AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
+					TestPropertyValues.of("zeromq.consumer.connectUrl:").applyTo(context);
+					context.register(Config.class);
+					context.refresh();
 
-                })
-                .withMessageContaining("Error creating bean with name 'zeromq.consumer-org.springframework.cloud.fn.consumer.zeromq.ZeroMqConsumerProperties': Could not bind properties to 'ZeroMqConsumerProperties' : prefix=zeromq.consumer, ignoreInvalidFields=false, ignoreUnknownFields=true; nested exception is org.springframework.boot.context.properties.bind.BindException: Failed to bind properties under 'zeromq.consumer' to org.springframework.cloud.fn.consumer.zeromq.ZeroMqConsumerProperties");
-    }
+				})
+				.withMessageContaining(
+						"Error creating bean with name 'zeromq.consumer-org.springframework.cloud.fn.consumer.zeromq.ZeroMqConsumerProperties': Could not bind properties to 'ZeroMqConsumerProperties' : prefix=zeromq.consumer, ignoreInvalidFields=false, ignoreUnknownFields=true; nested exception is org.springframework.boot.context.properties.bind.BindException: Failed to bind properties under 'zeromq.consumer' to org.springframework.cloud.fn.consumer.zeromq.ZeroMqConsumerProperties");
+	}
 
-    @Test
-    public void testInvalidTopicExpression() {
-        assertThatExceptionOfType(ConfigurationPropertiesBindException.class)
-                .isThrownBy(() -> {
+	@Test
+	public void testInvalidTopicExpression() {
+		assertThatExceptionOfType(ConfigurationPropertiesBindException.class)
+				.isThrownBy(() -> {
 
-                    AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
-                    TestPropertyValues
-                            .of(
-                                    "zeromq.consumer.connectUrl: tcp://localhost:5678",
-                                    "zeromq.consumer.topic: test-"
-                            )
-                            .applyTo(context);
-                    context.register(Config.class);
-                    context.refresh();
+					AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
+					TestPropertyValues
+							.of(
+									"zeromq.consumer.connectUrl: tcp://localhost:5678",
+									"zeromq.consumer.topic: test-")
+							.applyTo(context);
+					context.register(Config.class);
+					context.refresh();
 
-                })
-                .withMessageContaining("Error creating bean with name 'zeromq.consumer-org.springframework.cloud.fn.consumer.zeromq.ZeroMqConsumerProperties': Could not bind properties to 'ZeroMqConsumerProperties' : prefix=zeromq.consumer, ignoreInvalidFields=false, ignoreUnknownFields=true; nested exception is org.springframework.boot.context.properties.bind.BindException: Failed to bind properties under 'zeromq.consumer.topic' to org.springframework.expression.Expression");
-    }
+				})
+				.withMessageContaining(
+						"Error creating bean with name 'zeromq.consumer-org.springframework.cloud.fn.consumer.zeromq.ZeroMqConsumerProperties': Could not bind properties to 'ZeroMqConsumerProperties' : prefix=zeromq.consumer, ignoreInvalidFields=false, ignoreUnknownFields=true; nested exception is org.springframework.boot.context.properties.bind.BindException: Failed to bind properties under 'zeromq.consumer.topic' to org.springframework.expression.Expression");
+	}
 
-    @Configuration
-    @EnableConfigurationProperties(ZeroMqConsumerProperties.class)
-    @Import(org.springframework.cloud.stream.config.SpelExpressionConverterConfiguration.class)
-    static class Config { }
+	@Configuration
+	@EnableConfigurationProperties(ZeroMqConsumerProperties.class)
+	@Import(org.springframework.cloud.stream.config.SpelExpressionConverterConfiguration.class)
+	static class Config {
+	}
 
 }

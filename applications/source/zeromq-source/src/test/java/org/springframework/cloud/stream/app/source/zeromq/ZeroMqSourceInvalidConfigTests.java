@@ -44,8 +44,9 @@ public class ZeroMqSourceInvalidConfigTests {
 
 	@Test
 	public void testEmptyConnectionUrl() {
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
 		try {
-			AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
+
 			TestPropertyValues.of("zeromq.supplier.connectUrl:").applyTo(context);
 			context.register(Config.class);
 			context.refresh();
@@ -55,12 +56,16 @@ public class ZeroMqSourceInvalidConfigTests {
 			assertThat(e, instanceOf(BeanCreationException.class));
 			assertThat(extractedValidationMessage(e), containsString("connectUrl is required like tcp://server:port"));
 		}
+		finally {
+			context.close();
+		}
 	}
 
 	@Test
 	public void testNegativeBindPort() {
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
 		try {
-			AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
+
 			TestPropertyValues.of("zeromq.supplier.bindPort:-1").applyTo(context);
 			context.register(Config.class);
 			context.refresh();
@@ -69,6 +74,9 @@ public class ZeroMqSourceInvalidConfigTests {
 		catch (Exception e) {
 			assertThat(e, instanceOf(BeanCreationException.class));
 			assertThat(extractedValidationMessage(e), containsString("'bindPort' must not be negative"));
+		}
+		finally {
+			context.close();
 		}
 	}
 

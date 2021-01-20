@@ -28,7 +28,6 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
-            <version>1.9.1</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

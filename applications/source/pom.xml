@@ -32,5 +32,7 @@
         <module>syslog-source</module>
         <module>mail-source</module>
         <module>zeromq-source</module>
+
+        <module>matomo-source</module>
     </modules>
 </project>

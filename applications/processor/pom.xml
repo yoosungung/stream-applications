@@ -23,6 +23,8 @@
         <module>image-recognition-processor</module>
         <module>object-detection-processor</module>
         <module>semantic-segmentation-processor</module>
+
+        <module>custom-processor</module>
     </modules>
 
 </project>

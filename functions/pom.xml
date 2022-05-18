@@ -92,6 +92,9 @@
 
 		<module>spring-functions-parent</module>
 		<module>function-dependencies</module>
+
+		<module>function/custom-function</module>
+		<module>supplier/matomo-supplier</module>
 	</modules>
 
 	<repositories>

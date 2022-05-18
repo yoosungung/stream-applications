@@ -1,0 +1,2 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  io.j2lab.cloud.fn.custom.CustomFunctionConfiguration

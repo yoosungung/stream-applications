@@ -62,8 +62,7 @@ public class MatomoSupplierConfiguration {
 
 	@Bean
 	public Publisher<Message<byte[]>> matomoSupplierFlow(MatomoSupplierProperties matomoSupplierProperties,
-			HeaderMapper<HttpHeaders> matomoHeaderMapper,
-			ServerCodecConfigurer serverCodecConfigurer) {
+			HeaderMapper<HttpHeaders> matomoHeaderMapper, ServerCodecConfigurer serverCodecConfigurer) {
 
 		return IntegrationFlows.from(
 						WebFlux.inboundChannelAdapter(matomoSupplierProperties.getPathPattern())

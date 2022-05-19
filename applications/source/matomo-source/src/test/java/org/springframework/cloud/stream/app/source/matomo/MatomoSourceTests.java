@@ -27,7 +27,6 @@ import org.springframework.cloud.stream.binder.test.OutputDestination;
 import org.springframework.cloud.stream.binder.test.TestChannelBinderConfiguration;
 import org.springframework.cloud.stream.config.BindingServiceConfiguration;
 import org.springframework.context.annotation.Import;
-import org.springframework.messaging.Message;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -46,10 +45,18 @@ public class MatomoSourceTests {
 
 	@Test
 	public void testSourceFromSupplier() {
-		testRestTemplate.postForObject("/", "test1", Object.class);
-		Message<byte[]> sourceMessage = outputDestination.receive(10000);
-		final String actual = new String(sourceMessage.getPayload());
-		assertThat(actual).isEqualTo("test1");
+		final String matotmojs = testRestTemplate.getForObject("/matomo.js", String.class);
+		assertThat(matotmojs).startsWith("/*!!\n" +
+				" * Matomo - free/libre analytics platform");
+
+		final String containerjs = testRestTemplate.getForObject("/js/container_KapVpol6.js", String.class);
+		assertThat(matotmojs).startsWith("/*!!\n" +
+				" * Matomo - free/libre analytics platform");
+
+		//testRestTemplate.postForObject("/matotmo.php", "test1", Object.class);
+		//Message<byte[]> sourceMessage = outputDestination.receive(10000);
+		//final String actual = new String(sourceMessage.getPayload());
+		//assertThat(actual).isEqualTo("test1");
 	}
 
 	@SpringBootApplication

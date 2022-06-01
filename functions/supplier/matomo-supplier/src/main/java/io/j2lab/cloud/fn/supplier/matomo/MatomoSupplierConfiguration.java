@@ -16,10 +16,16 @@
 
 package io.j2lab.cloud.fn.supplier.matomo;
 
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Supplier;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 
@@ -52,6 +58,7 @@ import org.springframework.util.MultiValueMapAdapter;
 @Configuration
 public class MatomoSupplierConfiguration {
 
+	private ObjectMapper mapper = new ObjectMapper();
 	@Bean
 	@ConditionalOnMissingBean
 	public HeaderMapper<HttpHeaders> matomoHeaderMapper(MatomoSupplierProperties matomoSupplierProperties) {
@@ -61,13 +68,13 @@ public class MatomoSupplierConfiguration {
 	}
 
 	@Bean
-	public Publisher<Message<byte[]>> matomoSupplierFlow(MatomoSupplierProperties matomoSupplierProperties,
+	public Publisher<Message<JsonNode>> matomoSupplierFlow(MatomoSupplierProperties matomoSupplierProperties,
 			HeaderMapper<HttpHeaders> matomoHeaderMapper, ServerCodecConfigurer serverCodecConfigurer) {
 
 		return IntegrationFlows.from(
 						WebFlux.inboundChannelAdapter(matomoSupplierProperties.getPathPattern())
 								.requestMapping(m -> m.methods(HttpMethod.POST))
-								.requestPayloadType(byte[].class)
+								.requestPayloadType(JsonNode.class)
 								.statusCodeExpression(new ValueExpression<>(HttpStatus.ACCEPTED))
 								.headerMapper(matomoHeaderMapper)
 								.codecConfigurer(serverCodecConfigurer)
@@ -85,16 +92,29 @@ public class MatomoSupplierConfiguration {
 												: null,
 								true))
 				.transform(Message.class, message -> {
-					String body = "";
-					if (!((MultiValueMapAdapter) message.getPayload()).isEmpty()) {
-						body = String.valueOf((byte[]) message.getPayload());
-						if (body != null && body.length() >= 2 && body.startsWith("{") && body.endsWith("}")) {
-							body = body.substring(1, body.length() - 1);
-						}
-					}
-					String params = "";
-					String url = message.getHeaders().get("http_requestUrl").toString();
+					MessageHeaders headers = message.getHeaders();
+					String url = headers.get("http_requestUrl").toString();
+
 					if (url != null && url.length() > 0 && url.contains("/matomo.php?")) {
+
+						ObjectNode body = null;
+						if (!((MultiValueMapAdapter) message.getPayload()).isEmpty()) {
+							body = ((ObjectNode) message.getPayload());
+						}
+						else {
+							body = mapper.createObjectNode();
+						}
+
+						Map<String, Object> newHeaders = new HashMap<String, Object>();
+						for (String k : headers.keySet()) {
+							if (!"http_requestUrl".equals(k)) {
+								Object val = headers.get(k);
+								if (val instanceof Serializable) {
+									newHeaders.put(k, val);
+								}
+							}
+						}
+
 						try {
 							url = URLDecoder.decode(url, "UTF-8");
 						}
@@ -102,32 +122,32 @@ public class MatomoSupplierConfiguration {
 							throw new RuntimeException(e);
 						}
 						String[] queryPath = url.split("/matomo.php?");
-						params = queryPath[1]
-								.substring(1)
-								.replaceAll("&", "\",\"")
-								.replaceAll("=", "\":\"");
-						if (params.length() > 0) {
-							params = "\"" + params + "\"";
+						String[] pairs = queryPath[1].substring(1).split("&");
+						for (String pair : pairs) {
+							int idx = pair.indexOf("=");
+							body.put(pair.substring(0, idx), pair.substring(idx + 1));
 						}
-					}
-					byte[] newBody = null;
-					if (params.length() > 0 && body.length() > 0) {
-						newBody = String.format("{%s,%s}", params, body).getBytes();
+
+						if (body.has("_id")) {
+							newHeaders.put("kafka_messageKey", body.get("_id").asText().getBytes());
+						}
+
+						Message<JsonNode> newMessage = MessageBuilder.withPayload((JsonNode) body)
+								.copyHeaders(newHeaders)
+								.build();
+
+						return newMessage;
 					}
 					else {
-						newBody = String.format("{%s%s}", params, body).getBytes();
+						return message;
 					}
-					Message<byte[]> newMessage = MessageBuilder.withPayload(newBody)
-							.copyHeaders(message.getHeaders())
-							.build();
-					return newMessage;
 				})
 				.toReactivePublisher();
 	}
 
 	@Bean
-	public Supplier<Flux<Message<byte[]>>> matomoSupplier(
-			Publisher<Message<byte[]>> matomoRequestPublisher,
+	public Supplier<Flux<Message<JsonNode>>> matomoSupplier(
+			Publisher<Message<JsonNode>> matomoRequestPublisher,
 			WebFluxInboundEndpoint webFluxInboundEndpoint) {
 
 		return () -> Flux.from(matomoRequestPublisher)

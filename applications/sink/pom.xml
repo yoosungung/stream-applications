@@ -34,5 +34,7 @@
         <module>rsocket-sink</module>
         <module>elasticsearch-sink</module>
         <module>zeromq-sink</module>
+
+        <module>ignite-sink</module>
     </modules>
 </project>

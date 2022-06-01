@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>matomo-source</artifactId>
+    <artifactId>ignite-sink</artifactId>
     <version>3.2.1-SNAPSHOT</version>
-    <name>matomo-source</name>
-    <description>matomo source apps</description>
+    <name>ignite-sink</name>
+    <description>ignite sink apps</description>
     <packaging>jar</packaging>
 
     <parent>
@@ -15,26 +16,27 @@
         <relativePath/>
     </parent>
 
+    <properties>
+        <gridgain.version>8.7.9</gridgain.version>
+    </properties>
+
     <dependencies>
+        <dependency>
+            <groupId>io.j2lab.cloud.fn</groupId>
+            <artifactId>ignite-consumer</artifactId>
+            <version>0.1.3-SNAPSHOT</version>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.j2lab.cloud.fn</groupId>
-            <artifactId>matomo-supplier</artifactId>
-            <version>0.1.3-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-webflux</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.projectreactor</groupId>
-            <artifactId>reactor-test</artifactId>
-            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.junit.vintage</groupId>
+                    <artifactId>junit-vintage-engine</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 
@@ -49,22 +51,15 @@
                 <artifactId>spring-cloud-dataflow-apps-generator-plugin</artifactId>
                 <configuration>
                     <application>
-                        <name>matomo</name>
-                        <type>source</type>
+                        <name>ignite</name>
+                        <type>sink</type>
                         <version>${project.version}</version>
-                        <configClass>io.j2lab.cloud.fn.supplier.matomo.MatomoSupplierConfiguration.class</configClass>
-
-                        <properties>
-                            <spring.main.web-application-type>reactive</spring.main.web-application-type>>
-                            <spring.cloud.streamapp.security.enabled>false</spring.cloud.streamapp.security.enabled>
-                            <spring.cloud.streamapp.security.csrf-enabled>false</spring.cloud.streamapp.security.csrf-enabled>>
-                        </properties>
-
+                        <configClass>io.j2lab.cloud.fn.IgniteConsumerConfiguration.class</configClass>
                         <maven>
                             <dependencies>
                                 <dependency>
                                     <groupId>io.j2lab.cloud.fn</groupId>
-                                    <artifactId>matomo-supplier</artifactId>
+                                    <artifactId>ignite-consumer</artifactId>
                                     <version>0.1.3-SNAPSHOT</version>
                                 </dependency>
                             </dependencies>
@@ -74,10 +69,8 @@
                             <orgName>docker.io/dulle2</orgName>
                         </containerImage>
                     </application>
-
                 </configuration>
             </plugin>
-
         </plugins>
     </build>
 

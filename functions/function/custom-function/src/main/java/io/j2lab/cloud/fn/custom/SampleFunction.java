@@ -18,15 +18,24 @@ package io.j2lab.cloud.fn.custom;
 
 import java.util.function.Function;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import org.apache.ignite.client.ClientCache;
 import reactor.core.publisher.Flux;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.Message;
 
 public class SampleFunction implements Function<Flux<Message<?>>, Flux<Message<?>>> {
 
+	@Autowired
+	ClientCache<String, JsonNode> igniteCache;
+
 	@Override
 	public Flux<Message<?>> apply(Flux<Message<?>> input) {
-		return input;
+		return input.filter(message -> {
+			JsonNode body = (JsonNode) message.getPayload();
+			return (body.has("e_n") && "getEmail".equals(body.get("e_n").asText()));
+		});
 	}
 
 }

@@ -21,6 +21,11 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.function.Function;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import org.apache.ignite.Ignition;
+import org.apache.ignite.client.ClientCache;
+import org.apache.ignite.client.IgniteClient;
+import org.apache.ignite.configuration.ClientConfiguration;
 import reactor.core.publisher.Flux;
 
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -39,9 +44,9 @@ public class CustomFunctionConfiguration {
 
 	@Bean
 	public Function<Flux<Message<?>>, Flux<Message<?>>> customFunction(CustomFunctionProperties props) {
-		if (props.getUrl() != null && props.getUrl().length() > 0) {
+		if (props.getClassLoaderUrl() != null && props.getClassLoaderUrl().length() > 0) {
 			try {
-				this.loader = new URLClassLoader(new URL[] {new URL(props.getUrl())}, ClassLoader.getSystemClassLoader());
+				this.loader = new URLClassLoader(new URL[] {new URL(props.getClassLoaderUrl())}, ClassLoader.getSystemClassLoader());
 			}
 			catch (MalformedURLException e) {
 				e.printStackTrace();
@@ -67,9 +72,24 @@ public class CustomFunctionConfiguration {
 			}
 		}
 		else {
-			return new SampleFunction();
+			return new PassFunction();
 		}
 
+		return null;
+	}
+
+	@Bean
+	public ClientCache<String, JsonNode> igniteCache(CustomFunctionProperties props) {
+		if (props.getIgniteUrl() != null) {
+			ClientConfiguration cfg = new ClientConfiguration();
+			cfg.setAddresses(props.getIgniteUrl().split(","));
+
+			IgniteClient client = Ignition.startClient(cfg);
+
+			if (client != null && props.getCacheName() != null) {
+				return client.getOrCreateCache(props.getCacheName());
+			}
+		}
 		return null;
 	}
 }

@@ -14,43 +14,61 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.fn.custom;
+package io.j2lab.cloud.fn.custom;
 
 import java.util.function.Function;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
-import reactor.test.StepVerifier;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.GenericMessage;
 import org.springframework.test.annotation.DirtiesContext;
 
-@SpringBootTest(properties = "filter.function.expression=payload.length() > 5")
+@SpringBootTest(properties = {
+		"j2lab.custom.function.class-name=io.j2lab.cloud.fn.custom.Test1",
+		"j2lab.custom.function.class-loader-url=file:///Users/eric/Documents/stream-applications/functions/function/custom-function/target/test-classes/",
+		"j2lab.custom.function.ignite-url=218.152.137.218:10800",
+		"j2lab.custom.function.cache-name=tagUserId"
+})
 @DirtiesContext
 public class CustomFunctionApplicationTests {
 
 	@Autowired
-	@Qualifier("filterFunction")
-	Function<Flux<Message<?>>, Flux<Message<?>>> filter;
+	Function<Flux<Message<?>>, Flux<Message<?>>> custom;
 
 	@Test
 	public void testFilter() {
+		ObjectMapper mapper = new ObjectMapper();
+
 		Flux<Message<?>> messageFlux =
-				Flux.just("hello", "hello world")
-						.map(GenericMessage::new);
-		Flux<Message<?>> result = this.filter.apply(messageFlux);
-		result
-				.map(Message::getPayload)
+				Flux.just("{\"_id\": \"8227bfa2087fd101\"}")
+						.map(itm -> {
+							JsonNode body = null;
+							try {
+								body = mapper.readTree(itm);
+								return new GenericMessage(body);
+							}
+							catch (JsonProcessingException e) {
+								throw new RuntimeException(e);
+							}
+						});
+		Flux<Message<?>> result = this.custom.apply(messageFlux);
+		/*
+		result.map(Message::getPayload)
 				.cast(String.class)
 				.as(StepVerifier::create)
-				.expectNext("hello world")
+				.expectNext("{}")
 				.expectComplete()
 				.verify();
+		 */
+		result.subscribe();
 	}
 
 	@SpringBootApplication

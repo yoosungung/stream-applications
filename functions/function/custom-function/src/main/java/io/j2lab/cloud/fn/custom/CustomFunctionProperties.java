@@ -34,22 +34,43 @@ public class CustomFunctionProperties {
 	/**
 	 * load URL for custom function.
 	 */
-	private String url = "";
+	private String classLoaderUrl = "";
+
+	/**
+	 * Ignite thin client server Url.
+	 */
+	private String igniteUrl;
+
+	/**
+	 * Ignite save target cache name.
+	 */
+	private String cacheName;
 
 	public String getClassName() {
 		return this.className;
 	}
-
 	public void setClassName(String className) {
 		this.className = className;
 	}
 
-	public String getUrl() {
-		return this.url;
+	public String getClassLoaderUrl() {
+		return this.classLoaderUrl;
+	}
+	public void setClassLoaderUrl(String classLoaderUrl) {
+		this.classLoaderUrl = classLoaderUrl;
 	}
 
-	public void setUrl(String url) {
-		this.url = url;
+	public String getIgniteUrl() {
+		return this.igniteUrl;
+	}
+	public void setIgniteUrl(String igniteUrl) {
+		this.igniteUrl = igniteUrl;
 	}
 
+	public String getCacheName() {
+		return this.cacheName;
+	}
+	public void setCacheName(String cacheName) {
+		this.cacheName = cacheName;
+	}
 }

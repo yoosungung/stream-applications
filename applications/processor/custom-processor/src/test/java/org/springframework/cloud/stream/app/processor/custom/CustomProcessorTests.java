@@ -44,8 +44,7 @@ public class CustomProcessorTests {
 		try (ConfigurableApplicationContext context = new SpringApplicationBuilder(
 				TestChannelBinderConfiguration.getCompleteConfiguration(CustomProcessorTestApplication.class))
 				.web(WebApplicationType.NONE)
-				.run("--spring.cloud.function.definition=customFunction",
-						"--filter.function.expression=payload.length() > 5")) {
+				.run("--spring.cloud.function.definition=customFunction")) {
 
 			InputDestination processorInput = context.getBean(InputDestination.class);
 			OutputDestination processorOutput = context.getBean(OutputDestination.class);
